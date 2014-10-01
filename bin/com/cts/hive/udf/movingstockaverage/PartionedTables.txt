@@ -1,0 +1,36 @@
+CREATE EXTERNAL TABLE IF NOT EXISTS stocks (
+ymd               STRING,
+price_open        FLOAT,
+price_high        FLOAT,
+price_low         FLOAT,
+price_close       FLOAT,
+volume            INT,
+price_adj_close   FLOAT
+)
+PARTITIONED BY (exchange STRING, symbol STRING)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+-- We don't have any partitions yet:
+
+SHOW PARTITIONS stocks;
+
+-- For EXTERNAL, partitioned tables, you use ALTER TABLE to add each
+-- partition and specify a unique directory for its data.
+-- We'll just add data for four stocks:
+
+ALTER TABLE stocks ADD PARTITION(exchange = 'NASDAQ', symbol = 'AAPL')
+LOCATION '/user/training/stocks/input/plain-text/NASDAQ/AAPL';
+
+ALTER TABLE stocks ADD PARTITION(exchange = 'NASDAQ', symbol = 'INTC')
+LOCATION '/user/training/stocks/input/plain-text/NASDAQ/INTC';
+
+ALTER TABLE stocks ADD PARTITION(exchange = 'NYSE', symbol = 'GE')
+LOCATION '/user/training/stocks/input/plain-text/NYSE/GE';
+
+ALTER TABLE stocks ADD PARTITION(exchange = 'NYSE', symbol = 'IBM')
+LOCATION '/user/training/stocks/input/plain-text/NYSE/IBM';
+
+SHOW PARTITIONS stocks;
+--------------------------------------Import Data----------------------------------------------------
+LOAD DATA INPATH '/user/training/NYSE_daily_prices_A.csv' INTO TABLE `stocks` PARTITION (exchange='NYSE', symbol='A')
+-----------------------------------------------------------------------------------------------------
